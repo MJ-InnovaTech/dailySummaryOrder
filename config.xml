@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>dailySummaryOrder</name>
+	<displayName><![CDATA[Recapitulatif journalier des commandes]]></displayName>
+	<version><![CDATA[1.0.0]]></version>
+	<description><![CDATA[Permet l\'envoi journalier d\'un mail récapitulant les commandes faites dans la journée et celles qui sont en cours de traitement.]]></description>
+	<author><![CDATA[NDLP]]></author>
+	<tab><![CDATA[emailing]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+</module>
