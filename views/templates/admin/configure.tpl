@@ -26,11 +26,12 @@
 <div class="panel">
 	<div class="row moduleconfig-header">
 		<div class="col-xs-5 text-right">
-			<img src="{$module_dir|escape:'html':'UTF-8'}views/img/logo.jpg" />
+			<img src="{$module_dir|escape:'html':'UTF-8'}/logo.png" />
 		</div>
 		<div class="col-xs-7 text-left">
-			<h2>{l s='Lorem' mod='dailySummaryOrder'}</h2>
-			<h4>{l s='Lorem ipsum dolor' mod='dailySummaryOrder'}</h4>
+			<h2>{l s='Récapitulatif des commandes' mod='dailySummaryOrder'}</h2>
+			<h4>{l s='MJ-InnovaTech'}</h4>
+			<p>{l s='1.0.0'}</p>
 		</div>
 	</div>
 
@@ -40,14 +41,7 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<p>
-					<h4>{l s='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor' mod='dailySummaryOrder'}</h4>
-					<ul class="ul-spaced">
-						<li><strong>{l s='Lorem ipsum dolor sit amet' mod='dailySummaryOrder'}</strong></li>
-						<li>{l s='Lorem ipsum dolor sit amet' mod='dailySummaryOrder'}</li>
-						<li>{l s='Lorem ipsum dolor sit amet' mod='dailySummaryOrder'}</li>
-						<li>{l s='Lorem ipsum dolor sit amet' mod='dailySummaryOrder'}</li>
-						<li>{l s='Lorem ipsum dolor sit amet' mod='dailySummaryOrder'}</li>
-					</ul>
+					<h4>{l s='Récapitulatif des commandes' mod='dailySummaryOrder'}</h4>
 				</p>
 
 				<br />

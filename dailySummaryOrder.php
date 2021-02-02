@@ -35,9 +35,9 @@ class DailySummaryOrder extends Module
     public function __construct()
     {
         $this->name = 'dailySummaryOrder';
-        $this->tab = 'emailing';
+        $this->tab = 'administration';
         $this->version = '1.0.0';
-        $this->author = 'NDLP';
+        $this->author = 'MJ-InnovaTech';
         $this->need_instance = 0;
 
         /**
@@ -63,8 +63,7 @@ class DailySummaryOrder extends Module
 
         return parent::install() &&
             $this->registerHook('header') &&
-            $this->registerHook('backOfficeHeader') &&
-            $this->registerHook('displayOrderDetail');
+            $this->registerHook('backOfficeHeader');
     }
 
     public function uninstall()
@@ -90,7 +89,7 @@ class DailySummaryOrder extends Module
 
         $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
 
-        return $output;
+        return $output.$this->renderForm();
     }
 
     /**
@@ -215,10 +214,5 @@ class DailySummaryOrder extends Module
     {
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
-    }
-
-    public function hookDisplayOrderDetail()
-    {
-        /* Place your code here. */
     }
 }
