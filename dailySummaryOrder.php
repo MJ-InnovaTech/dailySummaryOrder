@@ -28,6 +28,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Db;
+
 class DailySummaryOrder extends Module
 {
     protected $config_form = false;
@@ -214,5 +216,26 @@ class DailySummaryOrder extends Module
     {
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+    }
+
+    /**
+     * Effectue la requête SQL permettant de récuperer les commandes en cours.
+     */
+    public function doSQLRequest()
+    {
+        /**
+         * @var \Db $db
+         */
+        $db = Db::getInstance();
+
+        $request = 'SELECT ps_orders.reference, ps_customer.firstname, ps_customer.lastname, ps_customer.email, ps_orders.total_products, ps_order_state_lang.name
+                    FROM ps_orders, ps_customer, ps_order_state_lang
+                    WHERE ps_orders.current_state IN (1, 2, 3, 13, 14)
+                    AND ps_orders.id_customer = ps_customer.id_customer
+                    AND ps_order_state_lang.id_lang = 2
+                    AND ps_order_state_lang.id_order_state = ps_orders.current_state;';
+
+        $result = $db->executeS($request);
+        return $result;
     }
 }
