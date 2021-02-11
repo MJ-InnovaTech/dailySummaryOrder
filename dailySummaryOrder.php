@@ -24,11 +24,11 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
+namespace DailySummaryOrder;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
-
-use Db;
 
 class DailySummaryOrder extends Module
 {
@@ -223,10 +223,7 @@ class DailySummaryOrder extends Module
      */
     public function doSQLRequest()
     {
-        /**
-         * @var \Db $db
-         */
-        $db = Db::getInstance();
+        $db = \Db::getInstance();
 
         $request = 'SELECT ps_orders.reference, ps_customer.firstname, ps_customer.lastname, ps_customer.email, ps_orders.total_products, ps_order_state_lang.name
                     FROM ps_orders, ps_customer, ps_order_state_lang

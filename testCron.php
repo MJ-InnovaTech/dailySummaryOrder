@@ -1,9 +1,9 @@
 <?php
 
-use dailySummaryOrder;
+// require 'dailySummaryOrder.php';
 
-$testDaily = new dailySummaryOrder();
+// $testDaily = new dailySummaryOrder();
 
-$tab = $testDaily->doSQLRequest();
+// $tab = $testDaily->doSQLRequest();
 
-var_dump($tab);
+echo "test";
