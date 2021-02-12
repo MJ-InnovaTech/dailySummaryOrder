@@ -215,4 +215,55 @@ class DailySummaryOrder extends Module
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
     }
+
+    /**
+     * Envoi d'un mail contenant le PDF précédement généré en pièce-jointe (légères modifications à apporter une fois la méthode de génération du PDF)
+     */
+    public function sendMail()
+    {
+        $to = 'admin@marc-rl.zd.fr';
+        $from = 'crontask@marc-rl.zd.fr';
+        $subject = 'Récapitulatif des commandes du ' . date('d/m/Y');
+        $message_html = '<b>Vous trouverez en pièce-jointe le récapitulatif des commandes du <u>' . date('d/m/Y') . "</u></b>";
+        $file = file_get_contents("Doc-site-ecommerce-stage-04_02_21.pdf");
+
+        $boundary_structure = md5(rand());
+        $boundary_alternatives = md5(rand());
+
+        $headers = [
+                "From: $from",
+                "Reply-To: $from",
+                "Content-Type: multipart/mixed; boundary=\"$boundary_structure\""
+        ];
+
+        /* Encodage du contenu du fichier à envoyer. En accord avec la RFC 2045. */
+        $attachment = chunk_split(base64_encode($file));
+
+        /* Le mieux serait d'inclure un fichier de template mais pour l'exemple un ob_start fera l'affaire. */
+        ob_start();
+        ?>
+        --<?=$boundary_structure . PHP_EOL /* Première partie de la structure: le message */?>
+        Content-Type: multipart/alternative; boundary="<?=$boundary_alternatives?>"
+
+        --<?=$boundary_alternatives . PHP_EOL /* Seconde alternative: HTML */?>
+        Content-Type: text/html; charset="utf-8"
+        Content-Transfer-Encoding: 8bit
+
+        <?=$message_html?>
+
+        --<?=$boundary_alternatives /* Fin des alternatives */?>--
+
+        --<?=$boundary_structure . PHP_EOL /* Seconde partie de la structure: le fichier */?>
+        Content-Type: application/pdf; name="<?php echo'Recap_du_'.date('d/m/Y')?>"
+        Content-Transfer-Encoding: base64
+        Content-Disposition: attachment
+
+        <?=$attachment?>
+
+        --<?=$boundary_structure /* Ferme la structure */?>--
+        <?php
+        $message = ob_get_clean();
+
+        $is_mail_sent = mail($to, $subject, $message, implode(PHP_EOL, $headers));
+    }
 }
