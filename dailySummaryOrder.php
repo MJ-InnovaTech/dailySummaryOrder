@@ -215,4 +215,123 @@ class DailySummaryOrder extends Module
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
     }
+
+    public function generatePDF()
+    {
+
+        $date = date('d-m-Y');
+        $output = '';
+
+        require_once('TCPDF/tcpdf.php');  
+        $obj_pdf = new TCPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);  
+        $obj_pdf->SetCreator(PDF_CREATOR);  
+        $obj_pdf->SetTitle("Récapitulatif des commandes du ". $date);  
+        $obj_pdf->SetHeaderData('', '', PDF_HEADER_TITLE, PDF_HEADER_STRING);  
+        $obj_pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));  
+        $obj_pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));  
+        $obj_pdf->SetDefaultMonospacedFont('helvetica');  
+        $obj_pdf->SetFooterMargin(PDF_MARGIN_FOOTER);  
+        $obj_pdf->SetMargins(PDF_MARGIN_LEFT, '5', PDF_MARGIN_RIGHT);  
+        $obj_pdf->setPrintHeader(false);  
+        $obj_pdf->setPrintFooter(false);  
+        $obj_pdf->SetAutoPageBreak(TRUE, 10);  
+        $obj_pdf->SetFont('helvetica', '', 8);  
+        $obj_pdf->AddPage();  
+        $content = ''; 
+        $content .= '  
+        <meta charset="UTF-8">
+        <style type="text/css">
+            th {
+                text-align: center;
+                font-weight: bold;
+                background-color: #d4e2ff;
+            }
+            .prix {
+                text-align: right;
+            }
+        </style>
+        <h3 align="center">Récapitulatif des commandes du '. $date .'</h3><br /><br />  
+        <table border="1" cellspacing="0" cellpadding="5">  
+            <tr>  
+                    <th width="12%">Reference</th>  
+                    <th width="15%">Prenom</th>  
+                    <th width="15%">Nom</th>  
+                    <th width="25%">Email</th>  
+                    <th width="10%">Prix</th>  
+                    <th width="20%">Etat Commande</th>  
+            </tr>  
+        ';  
+        $result = doSQLRequest();
+        while($row = mysqli_fetch_array($result))  
+        {    
+            $content .='<tr>  
+                            <td>'. utf8_encode($row["reference"]).'</td>  
+                            <td>'. utf8_encode($row["firstname"]).'</td>  
+                            <td>'. utf8_encode($row["lastname"]).'</td>  
+                            <td>'. utf8_encode($row["email"]).'</td>  
+                            <td class="prix">'.number_format($row["total_products"], 2, ',', ' ').' €</td>
+                            <td>'. utf8_encode($row["name"]).'</td>   
+                        </tr>  
+                            ';  
+        }  
+        $content .= '</table>';  
+        $obj_pdf->writeHTML($content);  
+        $fileName = 'Recap_Commande_Du_'.$date.'.pdf';
+        $obj_pdf->Output(__DIR__ ."/".$fileName, 'F');
+        sendMail($fileName);
+    
+    }
+
+    function sendMail($fileName)
+    {
+        $destinataire='admin@leonidas-le-jardin-des-gourmandises.fr';
+        $from='admin@leonidas-le-jardin-des-gourmandises.fr';
+        mb_internal_encoding('UTF-8');
+        $sujet='Récapitulatif des commandes du '. date('d/m/Y');
+        $encoded_subject = mb_encode_mimeheader($sujet, 'UTF-8', 'B', "\r\n", strlen('Subject: '));
+        $message='<h3>Vous trouverez en pièce-jointe le récapitulatif des commandes du <u>'. date('d/m/Y') . '</u></h3>';
+
+        $boundary = "_".md5 (uniqid (rand()));
+
+        //on selectionne le fichier à partir d'un chemin relatif 
+            $attached_file = file_get_contents('/public_html/modules/dailySummaryOrder/'.$fileName); //file name ie: ./image.jpg
+            $attached_file = chunk_split(base64_encode($attached_file));
+        //on recupere ici le nom du fichier
+            $pos=strrpos($fileName,"/");
+            if($pos!==false)$file_name=substr($fileName,$pos+1);
+            else $file_name=$fileName;
+
+        //on recupere ici le type du fichier
+            $pos=strrpos($fileName,".");
+            if($pos!==false)$file_type="/".substr($fileName,$pos+1);
+            else $file_type="";
+
+            //echo "file_type=$file_type";
+            $attached = "\n\n". "--" .$boundary . "\nContent-Type: application".$file_type."; name=\"$file_name\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment;                  filename=\"$file_name\"\r\n\n".$attached_file . "--" . $boundary . "--";
+
+        //on formate les headers
+            $headers ="From: ".$from." \r\n";
+            $headers .= "MIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"$boundary\"\r\n";
+
+        //on formate le corps du message
+            $body = "--". $boundary ."\nContent-Type: text/html; charset=utf-8\r\n\n".$message . $attached;
+
+        //on envoie le mail
+        mail($destinataire,$encoded_subject,$body,$headers);
+    }
+
+    function doSQLRequest()
+    {
+        $connect = new mysqli("localhost", "msgcbkbs_prestashop", "Leonid@s-Admin1.", "msgcbkbs_92Napz6gP");  
+
+        $sql = 'SELECT ps_orders.reference, ps_customer.firstname, ps_customer.lastname, ps_customer.email, ps_orders.total_products, ps_order_state_lang.name
+                    FROM ps_orders, ps_customer, ps_order_state_lang
+                    WHERE ps_orders.current_state IN (1, 2, 3, 13, 14)
+                    AND ps_orders.id_customer = ps_customer.id_customer
+                    AND ps_order_state_lang.id_lang = 2
+                    AND ps_order_state_lang.id_order_state = ps_orders.current_state;';
+                    
+        $result = mysqli_query($connect, $sql);
+        return $result;
+    }
 }
